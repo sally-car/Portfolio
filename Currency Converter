@@ -1,0 +1,98 @@
+# This is a tiny program that converts any given amount from one currency to another
+# I used the libraries tkinter for the GUI and requests for pulling the current data on currency rate from Fixer's API server
+# Please note that the API key used is out of free pull requests, so if remained unchanged, the currency converter itself won't actually work :-)
+
+import tkinter as tk
+from tkinter import *
+import requests
+
+# A root to hold the app
+root = tk.Tk()
+
+# A colored, nice canvas
+canvas = tk.Canvas(root, height=700, width=700, bg="#181818")
+canvas.pack()
+
+
+# Another frame that is white & centered
+frame = tk.Frame(root, bg="#404040")
+frame.place(relwidth =0.8, relheight=0.8, relx=0.1, rely=0.1)
+
+# Title
+title = tk.Label(frame, text="Currency\nConverter", font=('Courier', 24), fg='white', bg='#404040')
+title.pack()
+
+
+# Input user field: from
+L_from = Label(frame, text="From:", font=('Courier'), fg='white', bg='#404040')
+L_from.pack(side=TOP, padx=50, pady=5)
+
+inp_from = Entry(frame)
+inp_from.pack(side=TOP, pady=5)
+
+# Input user field: to
+L_to = Label(frame, text="To:", font=('Courier'), fg='white', bg='#404040')
+L_to.pack(side=TOP, pady=5)
+
+inp_to = Entry(frame)
+inp_to.pack(side=TOP, pady=5)
+
+#Input user field: amount
+L_amount = Label(frame, text="Amount:", font=('Courier'), fg='white', bg='#404040')
+L_amount.pack(side=TOP, pady=5)
+
+inp_amount = Entry(frame)
+inp_amount.pack(side=TOP, pady=5)
+
+
+# Convert function
+def convert():
+    try:
+        result = tk.Label(frame, 
+        text=f'{inp_amount.get()} {inp_from.get()} is {get_info()["result"]} in {inp_to.get()}', 
+        font=('Courier', 8), 
+        fg='white', 
+        bg='#404040'
+        )
+    except KeyError:
+        try:
+            result = tk.Label(frame, 
+            text=f'{get_info()["error"]["info"]}', 
+            font=('Courier', 8), 
+            fg='white', 
+            bg='#404040'
+            )
+        except:
+            result = tk.Label(frame, 
+            text="Something went wrong :( \n Maybe you're out of free searches?",
+            font=('Courier', 15),
+            fg='white', 
+            bg='#404040'
+            )
+    result.pack(side=TOP, pady=20)
+
+
+# Convert button
+convertButton = tk.Button(frame, text="Convert!", font=('Courier', 33), command=convert)
+convertButton.pack(side=BOTTOM, pady=10)
+
+# Return currency info from API as json object
+def get_info():
+    d = {"from": inp_from.get(), "to": inp_to.get(), "amount": inp_amount.get()}
+    d = {k: v.strip() for k,v in d.items()}
+    url = f'https://api.apilayer.com/fixer/convert?to={d["to"]}&from={d["from"]}&amount={d["amount"]}'
+    print(url)
+
+    # Get response from API server
+    headers = {
+    "apikey": "knb5ZUnUJ6r4VtWgMjYLDGQrOkp3R04m"
+    }
+    response = requests.request("GET", url, headers=headers)
+
+    # Return info as dictionary
+    info = response.json()
+    return info
+
+
+
+root.mainloop()
